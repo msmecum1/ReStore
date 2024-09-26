@@ -4,15 +4,22 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<StoreContext>(opt =>
 {
-
     opt.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
+});
+
+// Simplified CORS configuration
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(
+        builder =>
+        {
+            builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+        });
 });
 
 var app = builder.Build();
@@ -28,6 +35,9 @@ app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
+// Apply CORS policy (simplified)
+app.UseCors();
+
 app.MapControllers();
 
 var scope = app.Services.CreateScope();
@@ -38,9 +48,9 @@ try
     context.Database.Migrate();
     DBInitializer.Initialize(context);
 }
-catch(Exception ex)
+catch (Exception ex)
 {
-    logger.LogError(ex, "Aproblem occured during migration");
+    logger.LogError(ex, "A problem occurred during migration");
 }
 
 app.Run();
